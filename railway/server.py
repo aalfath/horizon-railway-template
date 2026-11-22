@@ -14,6 +14,7 @@ import html
 import json
 import os
 import re
+import signal
 import socket
 import subprocess
 import sys
@@ -336,6 +337,20 @@ def main():
     if not os.environ.get("LLM_API_KEY") and os.environ["LLM_PROVIDER"] != "ollama":
         log("LLM_API_KEY is empty: runs will fail until you set it in Railway's Variables tab.")
     httpd = make_server()
+
+    def stop(signum, _frame):
+        # A requested stop (redeploy, restart): end any running collection and exit cleanly.
+        log(f"signal {signum}: stopping")
+        pid = status.get("pid")
+        if pid:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except OSError:
+                pass
+        os._exit(0)
+
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
     threading.Thread(target=scheduler, name="scheduler", daemon=True).start()
     log(f"Horizon {COMMIT[:7]} web UI on port {PORT}, user {USERNAME!r}")
     try:
