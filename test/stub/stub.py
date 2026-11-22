@@ -1,6 +1,6 @@
 """Test-only stand-in for an OpenAI-compatible LLM (and a tiny RSS feed), so the
 template can be tested end to end without a paid API key. Not part of the template."""
-import json, os, re, time
+import json, os, re, socket, time
 from email.utils import formatdate
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -64,4 +64,17 @@ class H(BaseHTTPRequestHandler):
         self._send(200, json.dumps(resp), "application/json")
 
 
-ThreadingHTTPServer(("::", int(os.environ.get("PORT", 9000))), H).serve_forever()
+class S(ThreadingHTTPServer):
+    address_family = socket.AF_INET6
+
+    def server_bind(self):
+        self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        super().server_bind()
+
+
+port = int(os.environ.get("PORT", 9000))
+try:
+    srv = S(("::", port), H)
+except OSError:
+    srv = ThreadingHTTPServer(("0.0.0.0", port), H)
+srv.serve_forever()
