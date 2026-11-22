@@ -14,6 +14,7 @@ import html
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
 import tempfile
@@ -306,13 +307,35 @@ class Handler(BaseHTTPRequestHandler):
         return self.send(404, page("Not found", "<p>Not found.</p>"))
 
 
+class DualStackServer(ThreadingHTTPServer):
+    """Listens on IPv6 and IPv4 (Railway's private network is IPv6; its proxy may use IPv4)."""
+    address_family = socket.AF_INET6
+    daemon_threads = True
+
+    def server_bind(self):
+        try:
+            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        except OSError:
+            pass
+        super().server_bind()
+
+
+def make_server():
+    try:
+        return DualStackServer(("::", PORT), Handler)
+    except OSError:
+        log("IPv6 not available; listening on IPv4 only")
+        srv = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
+        srv.daemon_threads = True
+        return srv
+
+
 def main():
     SUMMARIES.mkdir(parents=True, exist_ok=True)
     LOGS.mkdir(parents=True, exist_ok=True)
     if not os.environ.get("LLM_API_KEY") and os.environ["LLM_PROVIDER"] != "ollama":
         log("LLM_API_KEY is empty: runs will fail until you set it in Railway's Variables tab.")
-    httpd = ThreadingHTTPServer(("::", PORT), Handler)
-    httpd.daemon_threads = True
+    httpd = make_server()
     threading.Thread(target=scheduler, name="scheduler", daemon=True).start()
     log(f"Horizon {COMMIT[:7]} web UI on port {PORT}, user {USERNAME!r}")
     try:
