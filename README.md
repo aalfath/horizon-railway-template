@@ -1,3 +1,5 @@
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/horizon?utm_medium=integration&utm_source=button&utm_campaign=horizon)
+
 # Horizon on Railway
 
 One-click Railway template for [Horizon](https://github.com/Thysrael/Horizon) (MIT), an AI news radar by Thysrael. Horizon collects stories from Hacker News, RSS feeds, Reddit, Telegram channels, GitHub and more, has your LLM score, filter, de-duplicate and summarise them, and writes a daily Markdown briefing.
