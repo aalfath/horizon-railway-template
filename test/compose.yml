@@ -1,0 +1,20 @@
+# Local test: same image and variables as the Railway template, 0.5 GB / 1 CPU.
+#   HORIZON_PASSWORD=test LLM_API_KEY=your-key docker compose -f test/compose.yml -p horizon up -d --build
+services:
+  horizon:
+    build: ..
+    ports: ["8080:8080"]
+    environment:
+      PORT: "8080"
+      HORIZON_PASSWORD: ${HORIZON_PASSWORD:?set HORIZON_PASSWORD}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      HORIZON_RUN_AT: "07:00"
+    volumes: [horizon-data:/app/data]
+    mem_limit: 512m
+    cpus: 1
+    restart: on-failure
+volumes:
+  horizon-data:

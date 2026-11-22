@@ -1,0 +1,67 @@
+{
+  "ai": {
+    "provider": "${LLM_PROVIDER}",
+    "model": "${LLM_MODEL}",
+    "base_url": "${LLM_BASE_URL}",
+    "api_key_env": "LLM_API_KEY",
+    "temperature": 0.3,
+    "max_tokens": 4096,
+    "throttle_sec": 0,
+    "languages": ["en"],
+    "analysis_concurrency": 2,
+    "enrichment_concurrency": 2
+  },
+  "processing": {
+    "profiles_dir": "profiles",
+    "default_profile": "tech-news",
+    "profile_settings": {
+      "tech-news": { "threshold": 7.0, "topic_dedup": true },
+      "tech-blog": { "threshold": 4.0, "topic_dedup": false },
+      "finance-news": { "threshold": 7.0, "topic_dedup": true }
+    }
+  },
+  "sources": {
+    "hackernews": {
+      "enabled": true,
+      "fetch_top_stories": 20,
+      "min_score": 100,
+      "profile": "tech-news"
+    },
+    "rss": [
+      {
+        "name": "Simon Willison",
+        "url": "https://simonwillison.net/atom/everything/",
+        "enabled": true,
+        "category": "ai-tools",
+        "profile": "tech-news"
+      },
+      {
+        "name": "Ars Technica",
+        "url": "https://feeds.arstechnica.com/arstechnica/index",
+        "enabled": true,
+        "category": "tech",
+        "profile": "tech-news"
+      },
+      {
+        "name": "Sean Goedecke",
+        "url": "https://www.seangoedecke.com/rss.xml",
+        "enabled": true,
+        "category": "software-engineering",
+        "profile": "tech-blog"
+      }
+    ],
+    "github": [
+      {
+        "type": "repo_releases",
+        "owner": "Thysrael",
+        "repo": "Horizon",
+        "enabled": false,
+        "profile": "tech-news"
+      }
+    ],
+    "reddit": { "enabled": false, "subreddits": [], "users": [] },
+    "telegram": { "enabled": false, "channels": [] }
+  },
+  "collection": { "time_window_hours": 24 },
+  "digest": { "max_items": 20 }
+}
